@@ -73,13 +73,7 @@ export class InteractionManager {
      * Initialisiert Info Panel Elemente
      */
     initializeInfoPanel() {
-        this.infoPanelElement = document.getElementById('infoPanel');
-        this.infoPanelTitle = document.getElementById('infoPanelTitle');
-        this.infoPanelContent = document.getElementById('infoPanelContent');
-        
-        if (!this.infoPanelElement) {
-            console.warn('[InteractionManager] Info Panel nicht gefunden');
-        }
+        // Info Panel Initialisierung wird nun vom UIManager gehandhabt
     }
     
     /**
@@ -390,49 +384,18 @@ export class InteractionManager {
      * Zeigt Info Panel an
      */
     showInfoPanel(object) {
-        if (!this.infoPanelElement || !object) return;
-        
-        const content = this.generateInfoPanelContent(object);
-        
-        if (this.infoPanelTitle) {
-            this.infoPanelTitle.textContent = content.title;
-        }
-        
-        if (this.infoPanelContent) {
-            this.infoPanelContent.innerHTML = content.html;
-        }
-        
-        // Panel anzeigen
-        this.infoPanelElement.style.display = 'block';
-        this.infoPanelElement.classList.remove('collapsed');
-        
-        // StateManager benachrichtigen
-        this.stateManager.showInfoPanel();
-        
+        if (!object) return;
+
+        // Verwende UIManager API
+        this.app.uiManager.showInfoPanelFor(object);
     }
     
     /**
-     * Versteckt Info Panel (kollabiert statt ausblenden)
+     * Versteckt Info Panel
      */
     hideInfoPanel() {
-        if (this.infoPanelElement) {
-            // Panel kollabieren statt ausblenden
-            this.infoPanelElement.classList.add('collapsed');
-            
-            // Pfeil-Symbol auf "kollabiert" setzen
-            const infoPanelToggle = document.getElementById('infoPanelToggle');
-            if (infoPanelToggle) {
-                infoPanelToggle.innerHTML = '>';
-            }
-            
-            // Inhalt leeren aber Panel sichtbar lassen
-            if (this.infoPanelContent) {
-                this.infoPanelContent.innerHTML = '<p>Kein Objekt ausgewaehlt</p>';
-            }
-        }
-        
-        this.stateManager.hideInfoPanel();
-        
+        // Verwende UIManager API
+        this.app.uiManager.hideDetails();
     }
     
     /**

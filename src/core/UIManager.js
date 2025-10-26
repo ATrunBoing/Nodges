@@ -21,7 +21,7 @@ export class UIManager {
             info: document.getElementById('infoPanelToggle'),
             dev: document.getElementById('devPanelToggle')
         };
-        
+
         this.filePanelContent = document.getElementById('filePanelContent');
         this.infoPanelContent = document.getElementById('infoPanelContent');
 
@@ -44,7 +44,7 @@ export class UIManager {
         } else {
             this.collapseInfoPanel();
         }
-        
+
         document.body.style.cursor = state.hoveredObject ? 'pointer' : 'default';
     }
 
@@ -57,9 +57,9 @@ export class UIManager {
                     panel.classList.toggle('collapsed');
                     toggle.innerHTML = panel.classList.contains('collapsed') ? '>' : 'v';
                     // After a toggle, panel positions might need to be recalculated.
-                    setTimeout(() => this.updateAllPanelPositions(), 350); 
+                    setTimeout(() => this.updateAllPanelPositions(), 350);
                 });
-                
+
                 // Add hover effects
                 toggle.addEventListener('mouseenter', () => toggle.style.backgroundColor = 'rgba(128, 128, 128, 0.2)');
                 toggle.addEventListener('mouseleave', () => toggle.style.backgroundColor = 'transparent');
@@ -73,7 +73,7 @@ export class UIManager {
 
         // Update on window resize
         window.addEventListener('resize', () => this.updateAllPanelPositions());
-        
+
         // Use observers to detect changes in panel sizes (e.g., when content is added)
         const fileInfoPanel = this.panels.fileInfo;
         if (fileInfoPanel) {
@@ -89,11 +89,11 @@ export class UIManager {
                 clearInterval(checkForLayoutPanel);
                 const observer = new ResizeObserver(() => this.updateAllPanelPositions());
                 observer.observe(layoutPanel);
-                this.updateAllPanelPositions(); 
+                this.updateAllPanelPositions();
             }
         }, 500);
     }
-    
+
     updateAllPanelPositions() {
         if (this.panels.fileInfo && this.panels.file) {
             const fileInfoRect = this.panels.fileInfo.getBoundingClientRect();
@@ -105,7 +105,7 @@ export class UIManager {
              const rect = positioningElement.getBoundingClientRect();
              this.panels.info.style.top = `${rect.bottom + 10}px`;
         }
-        
+
         if (this.panels.info && this.panels.dev) {
             const infoRect = this.panels.info.getBoundingClientRect();
             this.panels.dev.style.top = `${infoRect.bottom + 10}px`;
@@ -141,12 +141,11 @@ export class UIManager {
             }
         }
     }
-    
+
     async loadAvailableFiles() {
         if (!this.filePanelContent) return;
-        
+
         this.filePanelContent.innerHTML = '<div id="fileLoadingIndicator">Loading files...</div>';
-        
         const files = await this.fetchDirectoryContents();
         this.createFileButtons(files);
         // Refresh button could be added here if desired
@@ -160,7 +159,7 @@ export class UIManager {
             'large', 'medium', 'mega', 'small', 'us_legal_system_actors', 'us_political_system'
         ];
     }
-    
+
     createFileButtons(filenames) {
         if (!this.filePanelContent) return;
 
@@ -174,7 +173,7 @@ export class UIManager {
             const button = document.createElement('div');
             button.className = 'file-item';
             button.textContent = this.createDisplayName(filename);
-            
+
             button.onclick = (event) => {
                 // Remove active class from all other buttons
                 document.querySelectorAll('.file-item.active').forEach(item => item.classList.remove('active'));
@@ -209,7 +208,7 @@ export class UIManager {
            document.getElementById('fileZAxis').textContent = `Z-Achse: ${bounds.z.min.toFixed(2)} bis ${bounds.z.max.toFixed(2)}`;
        }
     }
-    
+
     updateFps(fps) {
         const fpsElement = document.getElementById('fileFPS');
         if (fpsElement) {
@@ -217,9 +216,50 @@ export class UIManager {
         }
     }
 
+    // --- New API Methods ---
+
+    showNodeDetails(nodeData) {
+        if (!this.panels.info || !this.infoPanelContent) return;
+
+        const geometryInfo = this.app.nodeObjectsManager.getNodeTypeInfo(nodeData.geometryType);
+        const content = `
+            <p><strong>Typ:</strong> Node</p>
+            <p><strong>Name:</strong> ${nodeData.name || 'Unbenannt'}</p>
+            <p><strong>ID:</strong> ${nodeData.id || 'Unbekannt'}</p>
+            <p><strong>Geometrie:</strong> ${geometryInfo.name} (${geometryInfo.faces} Flächen)</p>
+            <p><strong>Position:</strong> (${nodeData.x.toFixed(2)}, ${nodeData.y.toFixed(2)}, ${nodeData.z.toFixed(2)})</p>
+        `;
+
+        this.infoPanelContent.innerHTML = content;
+        this.panels.info.classList.remove('collapsed');
+        this.panelToggles.info.innerHTML = 'v';
+    }
+
+    showEdgeDetails(edgeData) {
+        if (!this.panels.info || !this.infoPanelContent) return;
+
+        const content = `
+            <p><strong>Typ:</strong> Edge</p>
+            <p><strong>Name:</strong> ${edgeData.name || 'Unbenannt'}</p>
+            <p><strong>Verbindung:</strong> Knoten ${edgeData.start} ↔ Knoten ${edgeData.end}</p>
+            <p><strong>Index:</strong> ${edgeData.index || 'Unbekannt'}</p>
+        `;
+
+        this.infoPanelContent.innerHTML = content;
+        this.panels.info.classList.remove('collapsed');
+        this.panelToggles.info.innerHTML = 'v';
+    }
+
+    hideDetails() {
+        if (!this.panels.info) return;
+        this.panels.info.classList.add('collapsed');
+        this.panelToggles.info.innerHTML = '>';
+        this.infoPanelContent.innerHTML = '<p>Kein Objekt ausgewählt</p>';
+    }
+
     showInfoPanelFor(object) {
         if (!this.panels.info || !this.infoPanelContent) return;
-        
+
         let content = '';
         if (object.userData.type === 'node') {
             const { nodeData, geometryType } = object.userData;
@@ -241,7 +281,7 @@ export class UIManager {
         } else {
              content = '<p>Keine Detailansicht für dieses Objekt.</p>';
         }
-        
+
         this.infoPanelContent.innerHTML = content;
         this.panels.info.classList.remove('collapsed');
         this.panelToggles.info.innerHTML = 'v';
