@@ -1,0 +1,17 @@
+%%{init: {'themeVariables': { 'fontSize': '15px'}}}%%
+%% Mermaid Sequence: Selection
+sequenceDiagram
+  participant U as User
+  participant IM as InteractionManager
+  participant RC as RaycastManager
+  participant SM as SelectionManager
+  participant HM as HighlightManager
+  participant ST as StateManager
+  U->>IM: click/drag
+  IM->>RC: throttledRaycast(event)
+  RC-->>IM: intersected object (node/edge)
+  IM->>SM: updateSelection(obj)
+  SM->>ST: setSelection(state)
+  ST-->>IM: state change
+  IM->>HM: apply highlight/glow
+  HM-->>IM: visual feedback

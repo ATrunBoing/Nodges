@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nodges – Mermaid Diagramm-Preview</title>
+  <link rel="icon" href="../favicon-32x32.png" />
+  <style>
+    :root {
+      --page-w: 297mm; /* A4 landscape width */
+      --page-h: 210mm; /* A4 landscape height */
+      --font-size: 15px; /* >= 11pt */
+      --bg: #ffffff;
+      --fg: #222222;
+      --content-max: 1100px;
+      --warn-bg: #fff7e6;
+      --warn-fg: #8a6100;
+    }
+    html, body { background: var(--bg); color: var(--fg); font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; font-size: 14px; margin: 0; padding: 0; }
+    header { padding: 12px 16px; position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid #ddd; z-index: 2; }
+    main   { max-width: var(--content-max); margin: 0 auto; padding: 16px; }
+    h1 { margin: 0 0 8px; font-size: 20px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .controls select, .controls button, .controls label { font-size: 14px; }
+    .controls button { padding: 6px 10px; }
+    section.diagram { page-break-inside: avoid; background: #fafafa; border: 1px solid #e6e6e6; border-radius: 6px; margin: 16px 0; padding: 12px; }
+    section.diagram h2 { font-size: 16px; margin: 0 0 8px; }
+    .diagram-container { overflow-x: auto; }
+    .warn { background: var(--warn-bg); border: 1px solid #ffd58a; color: var(--warn-fg); padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; display: none; }
+    .error { color: #a10000; font-weight: 600; }
+
+    @media print {
+      @page { size: A4 landscape; margin: 12mm; }
+      header, .controls, .warn { display: none !important; }
+      body { background: white; color: black; }
+      section.diagram { border: none; background: white; }
+      .print-landscape svg, .print-landscape .mermaid svg { width: calc(var(--page-w) - 24mm) !important; height: auto !important; }
+    }
+
+    @media print {
+      body.rotate-hack main { position: relative; height: var(--page-w); }
+      body.rotate-hack section.diagram { transform: rotate(90deg); transform-origin: top left; width: var(--page-h); }
+    }
+
+    body.force-landscape .diagram svg { width: 1400px; height: auto; }
+  </style>
+  <!-- UMD build, vermeidet ESM/CORS-Probleme bei file:// und einigen Browsern -->
+  <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    (function(){
+      // UI refs
+      let selectEl, containerEl, renderAllBtn, themeToggleBtn, printBtn, perPageToggle, toggleLandscapeBtn, toggleRotateBtn, exportSvgBtn, fileWarnEl;
+      const diagrams = [
+        { id: 'd1', title: '[3.1] Architekturübersicht', file: 'architecture_overview.mmd' },
+        { id: 'd2', title: '[3.2] Modulabhängigkeiten', file: 'module_dependency.mmd' },
+        { id: 'd3', title: '[3.3] Datenfluss', file: 'data_flow.mmd' },
+        { id: 'd4', title: '[3.4] Sequenz: Selection', file: 'event_sequence_selection.mmd' },
+        { id: 'd5', title: '[3.5] Flowchart: Import-Pipeline', file: 'import_pipeline.mmd' },
+        { id: 'd6', title: '[3.6] State Machine: Selection', file: 'state_machine_selection.mmd' },
+        { id: 'd7', title: '[3.7] Mindmap: System Overview', file: 'mindmap_system.mmd' },
+        { id: 'd8', title: '[3.8] Flowchart: App-Startup', file: 'flowchart_startup.mmd' },
+        { id: 'd9', title: '[3.9] Klassendiagramm: Core & Effects', file: 'class_map_core.mmd' }
+      ];
+
+      function initMermaid(theme) {
+        const t = theme || 'default';
+        if (window.mermaid && window.mermaid.initialize) {
+          window.mermaid.initialize({ startOnLoad: false, theme: t, themeVariables: { fontSize: '15px' } });
+        }
+      }
+
+      async function fetchDiagramText(file) {
+        try {
+          const res = await fetch(file);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return await res.text();
+        } catch (e) {
+          showError('Fehler beim Laden der Datei: ' + file + ' (' + e.message + ')');
+          throw e;
+        }
+      }
+
+      function showError(msg) {
+        console.error(msg);
+        const p = document.createElement('p');
+        p.className = 'error';
+        p.textContent = msg;
+        containerEl.appendChild(p);
+      }
+
+      async function renderOne(diagram) {
+        const section = document.createElement('section');
+        section.className = 'diagram print-landscape';
+        section.id = diagram.id;
+        section.innerHTML = '<h2>' + diagram.title + '</h2><div class="diagram-container"><div class="mermaid">Lade...</div></div>';
+        containerEl.appendChild(section);
+        const text = await fetchDiagramText(diagram.file);
+        const mermaidDiv = section.querySelector('.mermaid');
+        mermaidDiv.textContent = text; // init-Direktiven bleiben erhalten
+        await window.mermaid.run({ querySelector: '#' + diagram.id + ' .mermaid' });
+      }
+
+      async function renderSelected() {
+        containerEl.innerHTML = '';
+        const sel = selectEl.value || diagrams[0].id;
+        const d = diagrams.find(x => x.id === sel) || diagrams[0];
+        await renderOne(d);
+      }
+
+      async function renderAll() {
+        containerEl.innerHTML = '';
+        for (const d of diagrams) await renderOne(d);
+      }
+
+      async function openPrintInIframe() {
+        const sections = containerEl.querySelectorAll('section.diagram');
+        if (!sections.length) await renderSelected();
+
+        let iframe = document.getElementById('printIframe');
+        if (!iframe) {
+          iframe = document.createElement('iframe');
+          iframe.id = 'printIframe';
+          iframe.style.position = 'fixed';
+          iframe.style.right = '0';
+          iframe.style.bottom = '0';
+          iframe.style.width = '0';
+          iframe.style.height = '0';
+          iframe.style.border = '0';
+          document.body.appendChild(iframe);
+        }
+        const perPage = !!(perPageToggle && perPageToggle.checked);
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+
+        // Grundgerüst schreiben
+        doc.open();
+        doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Print - Nodges Diagrams</title></head><body></body></html>');
+        doc.close();
+
+        // Style einfügen (ASCII-only, keine Sonderzeichen)
+        const style = doc.createElement('style');
+        style.textContent = '@page{size:A4 landscape;margin:12mm;}body{font-family:system-ui,sans-serif;}section{page-break-inside:avoid;margin:0 0 8mm;}section h2{font-size:14pt;margin:0 0 4mm;}' + (perPage ? 'section{page-break-after:always;}' : '') + 'svg{width:calc(297mm - 24mm);height:auto;}';
+        doc.head.appendChild(style);
+
+        // Inhalte übertragen
+        const body = doc.body;
+        Array.from(containerEl.querySelectorAll('section.diagram')).forEach(sec => {
+          const titleEl = sec.querySelector('h2');
+          const svgEl = sec.querySelector('svg');
+          const outSec = doc.createElement('section');
+          const h2 = doc.createElement('h2');
+          h2.textContent = titleEl ? titleEl.textContent : '';
+          outSec.appendChild(h2);
+          if (svgEl) {
+            outSec.insertAdjacentHTML('beforeend', svgEl.outerHTML);
+          }
+          body.appendChild(outSec);
+        });
+
+        // kurzen Delay für Layout
+        await new Promise(r => setTimeout(r, 250));
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      }
+
+      function populateSelect() {
+        selectEl.innerHTML = '';
+        diagrams.forEach((d, i) => {
+          const opt = document.createElement('option');
+          opt.value = d.id; opt.textContent = (i+1) + '. ' + d.title;
+          selectEl.appendChild(opt);
+        });
+      }
+
+      function attachEvents() {
+        selectEl.addEventListener('change', renderSelected);
+        renderAllBtn.addEventListener('click', renderAll);
+        themeToggleBtn.addEventListener('click', async () => {
+          const newTheme = document.documentElement.getAttribute('data-theme') === 'neutral' ? 'default' : 'neutral';
+          document.documentElement.setAttribute('data-theme', newTheme);
+          initMermaid(newTheme);
+          if (containerEl.childElementCount > 1) await renderAll(); else await renderSelected();
+        });
+        toggleLandscapeBtn.addEventListener('click', () => { document.body.classList.toggle('force-landscape'); });
+        toggleRotateBtn.addEventListener('click', () => { document.body.classList.toggle('rotate-hack'); });
+        printBtn.addEventListener('click', openPrintInIframe);
+        exportSvgBtn.addEventListener('click', () => {
+          const sec = containerEl.querySelector('section.diagram');
+          if (!sec) return;
+          const svgEl = sec.querySelector('svg');
+          if (!svgEl) return;
+          const blob = new Blob([svgEl.outerHTML], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const title = ((sec.querySelector('h2') && sec.querySelector('h2').textContent) || 'diagram').replace(/\s+/g, '_');
+          a.href = url; a.download = title + '.svg';
+          document.body.appendChild(a); a.click(); a.remove();
+          URL.revokeObjectURL(url);
+        });
+      }
+
+      function maybeWarnFileProtocol() {
+        if (location.protocol === 'file:') {
+          fileWarnEl.style.display = 'block';
+        }
+      }
+
+      async function init() {
+        // refs
+        selectEl = document.getElementById('diagramSelect');
+        containerEl = document.getElementById('container');
+        renderAllBtn = document.getElementById('renderAll');
+        themeToggleBtn = document.getElementById('themeToggle');
+        printBtn = document.getElementById('printBtn');
+        perPageToggle = document.getElementById('perPageToggle');
+        toggleLandscapeBtn = document.getElementById('toggleLandscape');
+        toggleRotateBtn = document.getElementById('toggleRotate');
+        exportSvgBtn = document.getElementById('exportSvg');
+        fileWarnEl = document.getElementById('fileWarn');
+
+        initMermaid('default');
+        populateSelect();
+        attachEvents();
+        maybeWarnFileProtocol();
+        await renderSelected();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Nodges – Mermaid Diagramm-Preview</h1>
+    <div class="controls">
+      <label for="diagramSelect">Diagramm wählen:</label>
+      <select id="diagramSelect" aria-label="Diagramm auswählen"></select>
+      <button id="renderAll" type="button">Alle rendern</button>
+      <button id="themeToggle" type="button" title="Theme umschalten">Theme wechseln</button>
+      <button id="toggleLandscape" type="button" title="On-Screen Landscape-Größe">On-Screen Querformat</button>
+      <button id="toggleRotate" type="button" title="Druck-Workaround: Inhalt rotieren">Rotations‑Hack</button>
+      <label><input id="perPageToggle" type="checkbox" /> pro Seite ein Diagramm</label>
+      <button id="printBtn" type="button" title="Drucken/PDF (Landscape, stabil)">Drucken (Landscape, stabil)</button>
+      <button id="exportSvg" type="button" title="Aktuelles Diagramm als SVG speichern">SVG exportieren</button>
+    </div>
+  </header>
+  <main>
+    <div id="fileWarn" class="warn">Hinweis: Diese Seite läuft aktuell über file://. Einige Browser blockieren dabei das Laden der .mmd-Dateien (CORS). Starte am besten einen lokalen Server (z. B. "npx serve .") und öffne diese Seite über http://localhost ...</div>
+    <p>Schriftgröße: global 15px (≥ 11pt). Für PDF A4 Querformat, Skalierung 100% verwenden. Falls Querformat ignoriert wird, nutze „Drucken (Landscape, stabil)“ oder den Rotations‑Hack.</p>
+    <div id="container"></div>
+  </main>
+</body>
+</html>

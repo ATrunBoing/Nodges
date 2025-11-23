@@ -1,0 +1,64 @@
+%%{init: {'themeVariables': { 'fontSize': '200px'}}}%%
+%% Mermaid Architecture Overview
+graph TD
+  subgraph Core
+    CEM[CentralEventManager]
+    STM[StateManager]
+    UIM[UIManager]
+    LYM[LayoutManager]
+    INM[InteractionManager]
+  end
+  subgraph Utils
+    IMP[ImportManager]
+    EXP[ExportManager]
+    FDP[FutureDataParser]
+    FDM[FutureDataManager]
+    DMV[DataModelValidator]
+    RCM[RaycastManager]
+    SEM[SelectionManager]
+    SEMS[SearchManager]
+    BOP[BatchOperations]
+    PFO[PathFinder]
+    NWA[NetworkAnalyzer]
+    LGUI[LayoutGUI]
+    POP[PerformanceOptimizer]
+    NGM[NodeGroupManager]
+    NBH[NeighborhoodHighlighter]
+    ELM[EdgeLabelManager]
+    GND[GroundManager]
+    KBS[KeyboardShortcuts]
+    CIA[ConnectInterfaceAdapter]
+  end
+  subgraph Effects
+    HLM[HighlightManager]
+    GLE[GlowEffect]
+  end
+  subgraph Objects
+    NOD[Node]
+    EDG[Edge]
+    NMF[NodeMeshFactory]
+  end
+  subgraph Worker
+    LWK[layout-worker]
+  end
+
+  IMP --> FDP --> DMV --> FDM
+  FDM --> NOD
+  FDM --> EDG
+  NMF --> NOD
+  INM --> RCM --> SEM
+  SEM --> HLM --> GLE
+  STM --> UIM
+  LYM --> LWK
+  LYM --> NOD
+  LYM --> EDG
+  CEM --> STM
+  CEM --> INM
+  CEM --> UIM
+  CEM --> LYM
+  EXP --> IMP
+  POP -. optimizes .-> INM
+  POP -. optimizes .-> LYM
+  POP -. optimizes .-> UIM
+  CIA -. integrates .-> UIM
+  CIA -. integrates .-> STM

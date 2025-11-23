@@ -1,0 +1,57 @@
+%%{init: {'themeVariables': { 'fontSize': '15px'}}}%%
+%% Mermaid Module Dependency (logical)
+graph LR
+  subgraph Core
+    CEM
+    STM
+    UIM
+    LYM
+    INM
+  end
+  subgraph Utils
+    IMP
+    EXP
+    FDP
+    FDM
+    DMV
+    RCM
+    SEM
+    SEMS
+    BOP
+    PFO
+    NWA
+    LGUI
+    POP
+    NGM
+    NBH
+    ELM
+    GND
+    KBS
+    CIA
+  end
+  subgraph Effects
+    HLM
+    GLE
+  end
+  subgraph Objects
+    NOD
+    EDG
+    NMF
+  end
+
+  INM --> RCM
+  INM --> SEM
+  SEM --> HLM
+  HLM --> GLE
+  STM --> UIM
+  LYM --> LGUI
+  IMP --> FDP --> DMV --> FDM
+  FDM --> NOD
+  FDM --> EDG
+  NMF --> NOD
+  EXP --> STM
+  CIA --> UIM
+  CIA --> STM
+  POP --> INM
+  POP --> LYM
+  POP --> UIM

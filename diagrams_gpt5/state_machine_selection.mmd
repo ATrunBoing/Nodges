@@ -1,0 +1,9 @@
+%%{init: {'themeVariables': { 'fontSize': '15px'}}}%%
+%% Mermaid State Machine: Selection
+stateDiagram-v2
+  [*] --> Idle
+  Idle --> Hovering: mouse move + hit
+  Hovering --> Selected: click
+  Selected --> MultiSelecting: ctrl+click/drag
+  MultiSelecting --> Selected: mouse up
+  Selected --> Idle: escape/clear

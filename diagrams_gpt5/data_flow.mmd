@@ -1,0 +1,21 @@
+%%{init: {'themeVariables': { 'fontSize': '15px'}}}%%
+%% Mermaid Data Flow
+graph TD
+  U[User] -->|Open/Drop File| IMP[ImportManager]
+  IMP --> FDP[FutureDataParser]
+  FDP --> DMV[DataModelValidator]
+  DMV --> FDM[FutureDataManager]
+  FDM --> NOD[Node]
+  FDM --> EDG[Edge]
+  NOD --> SCN[Three.js Scene]
+  EDG --> SCN
+  SCN --> RDR[Render Loop]
+  RDR --> INM[InteractionManager]
+  INM --> RCM[RaycastManager]
+  RCM --> SEM[SelectionManager]
+  SEM --> STM[StateManager]
+  STM --> UIM[UIManager]
+  STM --> LYM[LayoutManager]
+  LYM --> NOD
+  LYM --> EDG
+  STM --> EXP[ExportManager]

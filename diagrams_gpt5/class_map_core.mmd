@@ -1,0 +1,27 @@
+%%{init: {'themeVariables': { 'fontSize': '15px'}}}%%
+%% Mermaid Class Diagram: Core and Effects
+classDiagram
+  class StateManager
+  class UIManager
+  class LayoutManager
+  class InteractionManager
+  class CentralEventManager
+  class RaycastManager
+  class SelectionManager
+  class HighlightManager
+  class GlowEffect
+  class Node
+  class Edge
+  class NodeMeshFactory
+
+  InteractionManager --> RaycastManager
+  InteractionManager --> SelectionManager
+  SelectionManager --> StateManager
+  HighlightManager --> GlowEffect
+  LayoutManager --> Node
+  LayoutManager --> Edge
+  StateManager --> UIManager
+  CentralEventManager --> StateManager
+  CentralEventManager --> UIManager
+  CentralEventManager --> InteractionManager
+  CentralEventManager --> LayoutManager

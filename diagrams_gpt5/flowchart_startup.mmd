@@ -1,0 +1,10 @@
+%%{init: {'themeVariables': { 'fontSize': '15px'}}}%%
+%% Mermaid Flowchart: App Startup
+flowchart TD
+  A[Load index.html] --> B[Load main.js]
+  B --> C[Init Three.js Scene]
+  C --> D[Init Managers (Core/Utils/Effects)]
+  D --> E[Bind Events/Shortcuts]
+  E --> F[Load Sample or Import Data]
+  F --> G[Build Scene from Data]
+  G --> H[Start Render Loop]

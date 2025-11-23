@@ -1,0 +1,372 @@
+Nodges – Mermaid Diagramm-Preview
+
+http://127.0.0.1:5501/diagrams_gpt5/preview.html
+
+Hinweis: Schriftgröße ist auf mindestens 15px konfiguriert (entspricht ≥11pt auf A4). Beim PDF-Export
+Skalierung 100% wählen.
+
+[3.1] Architekturübersicht
+Utils
+ExportManager
+
+Core
+CentralEventManager
+
+ConnectInterfaceAdapter
+integrates
+
+StateManager
+
+UIManager
+
+InteractionManager
+
+LayoutManager
+
+Worker
+
+Objects
+
+layout-worker
+
+NodeMeshFactory
+
+PerformanceOptimizer
+
+ImportManager
+
+optimizes
+integrates
+
+optimizes
+
+optimizes
+
+FutureDataParser
+
+DataModelValidator
+
+RaycastManager
+
+FutureDataManager
+
+SelectionManager
+
+SearchManager
+
+BatchOperations
+
+PathFinder
+
+NetworkAnalyzer
+
+LayoutGUI
+
+NodeGroupManager
+
+NeighborhoodHighlighter
+
+EdgeLabelManager
+
+GroundManager
+
+KeyboardShortcuts
+
+Effects
+Node
+
+Edge
+
+HighlightManager
+
+GlowEffect
+
+1 of 8
+
+26.10.25, 11:32
+
+Nodges – Mermaid Diagramm-Preview
+
+http://127.0.0.1:5501/diagrams_gpt5/preview.html
+
+[3.2] Modulabhängigkeiten
+
+2 of 8
+
+26.10.25, 11:32
+
+Nodges – Mermaid Diagramm-Preview
+
+http://127.0.0.1:5501/diagrams_gpt5/preview.html
+Objects
+NMF
+
+NOD
+
+EDG
+
+Utils
+IMP
+
+FDP
+
+DMV
+
+FDM
+
+RCM
+Effects
+SEM
+
+HLM
+
+GLE
+
+SEMS
+
+BOP
+
+PFO
+
+EXP
+
+CIA
+
+POP
+
+NWA
+
+LGUI
+
+NGM
+
+NBH
+
+ELM
+
+3 of 8
+
+GND
+
+26.10.25, 11:32
+
+Nodges – Mermaid Diagramm-Preview
+
+http://127.0.0.1:5501/diagrams_gpt5/preview.html
+
+KBS
+
+Core
+CEM
+
+INM
+
+LYM
+
+STM
+
+UIM
+
+[3.3] Datenfluss
+
+4 of 8
+
+26.10.25, 11:32
+
+Nodges – Mermaid Diagramm-Preview
+
+http://127.0.0.1:5501/diagrams_gpt5/preview.html
+
+User
+Open/Drop File
+ImportManager
+
+FutureDataParser
+
+DataModelValidator
+
+FutureDataManager
+
+Node
+
+Three.js Scene
+
+Render Loop
+
+InteractionManager
+
+RaycastManager
+
+SelectionManager
+
+StateManager
+
+5 of 8
+
+26.10.25, 11:32
+
+Nodges – Mermaid Diagramm-Preview
+
+UIManager
+
+http://127.0.0.1:5501/diagrams_gpt5/preview.html
+
+ExportManager
+
+LayoutManager
+
+Edge
+
+[3.4] Sequenz: Selection
+User
+
+InteractionManager
+
+RaycastManager
+
+SelectionManager
+
+HighlightManager
+
+StateManager
+
+click/drag
+throttledRaycast(event)
+intersected object (node/edge)
+updateSelection(obj)
+setSelection(state)
+state change
+apply highlight/glow
+visual feedback
+
+User
+
+InteractionManager
+
+RaycastManager
+
+SelectionManager
+
+HighlightManager
+
+StateManager
+
+[3.5] Flowchart: Import-Pipeline
+User selects file
+
+6 of 8
+
+FileHandler
+
+ImportManager
+
+FutureDataParser
+
+DataModelValidator
+
+FutureDataManager
+
+Create Node/Edge
+
+Scene Build
+
+Render
+
+26.10.25, 11:32
+
+Nodges – Mermaid Diagramm-Preview
+
+http://127.0.0.1:5501/diagrams_gpt5/preview.html
+
+[3.6] State Machine: Selection
+
+Idle
+mouse move + hit
+Hovering
+
+escape/clear
+
+click
+Selected
+ctrl+click/drag
+
+mouse up
+
+MultiSelecting
+
+[3.7] Mindmap: System Overview
+StateManager
+InteractionManager
+LayoutManager
+UIManager
+
+GroundManager
+
+GlowEffect
+RaycastManager
+
+DataModelValidator
+
+BatchOperations
+
+Effects
+ExportManager
+
+ImportManager
+
+SearchManager
+EdgeLabelManager
+
+Utils
+
+Objects
+
+NeighborhoodHighlighter
+LayoutGUI
+FutureDataManager
+
+HighlightManager
+
+Nodges
+
+KeyboardShortcuts
+
+ConnectInterfaceAdapter
+
+CentralEventManager
+
+PathFinder
+
+NetworkAnalyzer
+
+PerformanceOptimizer
+
+Core
+
+Node
+
+NodeGroupManager
+
+SelectionManager
+
+NodeMeshFactory
+
+Worker
+Edge
+
+FutureDataParser
+layout-worker
+
+7 of 8
+
+26.10.25, 11:32
+
+Nodges – Mermaid Diagramm-Preview
+
+http://127.0.0.1:5501/diagrams_gpt5/preview.html
+
+[3.8] Flowchart: App-Startup
+
+8 of 8
+
+26.10.25, 11:32

@@ -4,8 +4,14 @@
   "description": "3D Network Visualization Tool",
   "main": "main.js",
   "type": "module",
+  "scripts": {
+    "test": "node --test --test-reporter=spec",
+    "diagrams:pdf": "node scripts/convert_all_mermaid.mjs"
+  },
   "dependencies": {
     "three": "^0.161.0"
+  },
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^10.9.1"
   }
-
 }

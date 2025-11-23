@@ -1,0 +1,11 @@
+%%{init: {'themeVariables': { 'fontSize': '25px'}}}%%
+%% Mermaid Flowchart: Import Pipeline
+flowchart LR
+  A[User selects file] --> B[FileHandler]
+  B --> C[ImportManager]
+  C --> D[FutureDataParser]
+  D --> E[DataModelValidator]
+  E --> F[FutureDataManager]
+  F --> G[Create Node/Edge]
+  G --> H[Scene Build]
+  H --> I[Render]
